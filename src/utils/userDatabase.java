@@ -17,7 +17,7 @@ public class userDatabase {
             con=DriverManager.getConnection(url);
             System.out.println();
         }catch(Exception e){
-            System.out.println("数据库连接失败"+e.getMessage());;
+            System.out.println("failed in connecting with database"+e.getMessage());;
         }
         return con;
     }

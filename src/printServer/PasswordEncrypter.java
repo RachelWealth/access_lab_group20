@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class PasswordEncrypter
 {
-
+    private static String my_salt;
     public static byte[] getSHA(String input, String salt0) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-512");
         SecureRandom random = new SecureRandom();
@@ -21,13 +21,16 @@ public class PasswordEncrypter
 
             //System.out.println(str_salt);
             salt = str_salt.getBytes();
-            String str_salt0 = new String(salt);
+            my_salt = new String(salt);
             //System.out.println(str_salt0);
         }else{
             salt = salt0.getBytes();
         }
         md.update(salt);
         return md.digest(input.getBytes());
+    }
+    public static String getSalt(){
+        return my_salt;
     }
 //        Byte to Hex
     public static String toHexString(byte[] encHash) {
