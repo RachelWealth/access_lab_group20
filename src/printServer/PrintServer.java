@@ -1,41 +1,35 @@
 package printServer;
 
-import utils.userDatabase;
-import utils.sessionManager;
+import accesscontrol.AccessControl;
+import accesscontrol.Permission;
+import accesscontrol.Role;
+import accesscontrol.User;
 
 import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedList;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.Map;
 
-public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
+public class PrintServer extends UnicastRemoteObject implements IPrintServer, Serializable {
 
     boolean isServerStarted = false;
-    //boolean isServerStarted = true;
     public int queueNo = 1;
-    private LinkedList<PrinterQueue> printQueue = new LinkedList<PrinterQueue>();
-
-    private final userDatabase udb = new userDatabase();
-
-    private static sessionManager seMan = new sessionManager();
+    private LinkedList<PrinterQueue> printQueue;
+    private AccessControl accessControl;
 
     public PrintServer() throws RemoteException {
         super();
+        printQueue = new LinkedList<>();
+        accessControl = new AccessControl();
     }
 
+
     @Override
-    public void print(String filename, String printer, UUID token) throws RemoteException {
+    public void print(String filename, String printer) throws RemoteException {
         try {
             if (isStarted()) {
-                if (!seMan.isSessionValid(token)) {
-                    System.out.println("session expired");
-                    return;
-                }
                 PrinterQueue job = new PrinterQueue(filename, printer, queueNo);
                 printQueue.add(job);
                 queueNo++;
@@ -47,14 +41,11 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public String queue(String printer, UUID token) {
+    public String queue(String printer) {
         String queue = "";
         try {
             if (isStarted()) {
-                if (!sessionManager.isSessionValid(token)) {
-                    System.out.println("session expired");
-                    return null;
-                }
+
                 for(PrinterQueue pq: printQueue) {
                     queue += pq + "\n";
                 }
@@ -68,13 +59,9 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public void topQueue(String printer, int job, UUID token) {
+    public void topQueue(String printer, int job) {
         try {
             if (isStarted()) {
-                if (!sessionManager.isSessionValid(token)) {
-                    System.out.println("session expired");
-                    return;
-                }
                 PrinterQueue printingJobMoved = null;
                 for(PrinterQueue pq : printQueue) {
                     if(pq.queueNo == job) {
@@ -95,31 +82,21 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public UUID start(String user) {
-        UUID token = sessionManager.generateSession(user);
+    public void start() {
         isServerStarted = true;
         System.out.println("start() invoked");
-        return token;
 
     }
 
     @Override
-    public void stop( UUID token) {
-        if (!sessionManager.isSessionValid(token)) {
-            System.out.println("session expired");
-            return;
-        }
+    public void stop() {
         isServerStarted = false;
         System.out.println("stop() invoked");
 
     }
 
     @Override
-    public void restart( UUID token) {
-        if (!sessionManager.isSessionValid(token)) {
-            System.out.println("session expired");
-            return;
-        }
+    public void restart() {
         isServerStarted = false;
         printQueue.clear();
         isServerStarted = true;
@@ -128,13 +105,8 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public boolean status(String printer, UUID token) {
-        //TODO is running
+    public boolean status(String printer) {
         try {
-            if (!sessionManager.isSessionValid(token)) {
-                System.out.println("session expired");
-                return false;
-            }
             System.out.println("status() invoked");
             return isStarted();
         } catch (Exception e) {
@@ -146,7 +118,6 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     @Override
     public String readConfig(String parameter) {
         try {
-
             FileReader fReader = new FileReader("project.config");
             BufferedReader bReader = new BufferedReader(fReader);
             String line;
@@ -173,7 +144,6 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
 //            PrintWriter pWriter = new PrintWriter(new BufferedWriter(new FileWriter("project.config", true)));
 //            pWriter.println(parameter+"="+value);
 //            pWriter.close();
-
             System.out.println("setConfig() invoked");
 //        } catch (Exception e) {
 //            e.printStackTrace();
@@ -181,17 +151,33 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public boolean isAuthorized(String username, String password) throws SQLException, NoSuchAlgorithmException {
-        ResultSet rs = udb.search(username);
-        while (rs.next()){
-//            System.out.println(rs.getString("pw"));
-//            System.out.println(rs.getString("salt"));
-//            System.out.println(PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")));
-            if(Objects.equals(rs.getString("pw"), PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")))){
-                return true;
+    public boolean isAuthorized(User user, Permission permission) throws RemoteException {
+        return user.isAllowed(permission);
+    }
+
+    @Override
+    public User isAuthenticated(String username, String password) {
+        FileReader fReader = null;
+        try {
+            fReader = new FileReader("enc_passwords.txt");
+            BufferedReader bReader = new BufferedReader(fReader);
+            String line;
+            while ((line = bReader.readLine()) != null) {
+                if(line.contains(username)) {
+                    String correctEncPassword = line.split(":")[1];
+                    if(correctEncPassword.equals(PasswordEncrypter.getEncryptedPassword(password))) {
+                        return accessControl.getUserByUsername(username);
+                    }
+                }
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
 //    public boolean isStarted() throws Exception {
@@ -204,11 +190,44 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     @Override
     public boolean isStarted() {
         if(!isServerStarted) {
-            System.out.println("\t" + "Printer not started!");
-            System.out.println("Please START the printer to see method invocation status"+"\n");
+            System.out.println("\t\t\t\t\t" + "Printer not started!");
+            System.out.println("\t\t\t\t\t\t" +"\033[3m(For any invocation status:\033[0m");
+            System.out.println("\t\t\t\t\t\t" + "\033[3m'Printer must be started at least once\033[0m");
+            System.out.println("\t\t\t\t\t\t" + "\033[3m by any other user than 'ORDINARY USER')\033[0m");
         }
         return isServerStarted;
     }
+
+    @Override
+    public Permission getPermissionByName(Permission.Permissions permission) throws RemoteException {
+        return accessControl.getPermissionByName(permission);
+    }
+
+    @Override
+    public Role getRoleByName(Role.Roles role) throws RemoteException {
+        return accessControl.getRoleByName(role);
+    }
+
+    @Override
+    public void addUser(User userObj) throws RemoteException {
+        accessControl.addUser(userObj);
+    }
+
+    @Override
+    public void addPermission(Permission permission) throws RemoteException {
+        accessControl.addPermission(permission);
+    }
+
+    @Override
+    public void addRole(Role role) throws RemoteException {
+        accessControl.addRole(role);
+    }
+
+    @Override
+    public Map<Role.Roles, Role> getRoles() throws RemoteException {
+        return accessControl.getRoles();
+    }
+
 
     public class PrinterQueue {
         public String fileName;
