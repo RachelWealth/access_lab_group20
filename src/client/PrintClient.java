@@ -1,21 +1,20 @@
 package client;
 
-import accesscontrol.*;
 import printServer.IPrintServer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.rmi.Naming;
 import java.util.Scanner;
+import java.util.UUID;
 
-public class PrintServerClient {
+public class PrintClient {
     private static Scanner scanner = new Scanner(System.in);
     private static IPrintServer printServer;
-    private static User user;
-
-    public static void main(String[] args) throws Exception {
+    private static UUID token;
+    public static String username;
+    public static void main(String[] args) {
         connectToRemotePrintServer();
-        user = authenticateUser();
         showMenu();
     }
 
@@ -44,214 +43,132 @@ public class PrintServerClient {
         }
     }
 
-    public static User authenticateUser() throws Exception {
+    public static String authenticateUser() throws Exception {
         System.out.println("Enter UserName");
         String user = scanner.nextLine();
         System.out.println("Enter Password");
         String pass = scanner.nextLine();
-
-        User userobj = printServer.isAuthenticated(user, pass);
-        if (userobj != null) {
-            return userobj;
+        if (printServer.isAuthorized(user, pass)) {
+            username = user;
+            System.out.println("Authenticated!");
+            return user;
         }
+
         throw new Exception("Invalid credentials!");
-    }
-
-    public static boolean authorizeUser(Permission.Permissions permission) throws Exception {
-        Permission permission1 = printServer.getPermissionByName(permission);
-        if (printServer.isAuthorized(user, permission1)) {
-            return true;
-        }
-        throw new Exception("User does not have the permission!");
-    }
-
-    public static void printManagerMenu() {
-        System.out.println("1 Start the printer");
-        System.out.println("2 Stop the printer");
-        System.out.println("3 Restart the printer");
-        System.out.println("4 Print a file");
-        System.out.println("5 Queue");
-        System.out.println("6 TopQueue");
-        System.out.println("7 Read Configuration");
-        System.out.println("8 Set Configuration");
-        System.out.println("9 Check status");
-        System.out.println("10 Exit");
-    }
-
-    public static void printTechnicianMenu() {
-        System.out.println("1 Start the printer");
-        System.out.println("2 Stop the printer");
-        System.out.println("3 Restart the printer");
-        System.out.println("7 Read Configuration");
-        System.out.println("8 Set Configuration");
-        System.out.println("9 Check status");
-        System.out.println("10 Exit");
-    }
-
-    public static void printPowerUserMenu() {
-        System.out.println("3 Restart the printer");
-        System.out.println("4 Print a file");
-        System.out.println("5 Queue");
-        System.out.println("6 TopQueue");
-        System.out.println("10 Exit");
-    }
-
-    public static void printUserMenu() {
-        System.out.println("4 Print a file");
-        System.out.println("5 Queue");
-        System.out.println("10 Exit");
     }
 
     public static void showMenu() {
 
-        Role role = user.getRole();
-
         while (true) {
-        	try {
+            try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
             System.out.println("\n\n\n\n======= Print Client ==========");
             System.out.println("Select from following options:");
-
-            switch (role.getName()) {
-                case MANAGER:
-                    printManagerMenu();
-                    break;
-
-                case SERVICE_TECHNICIAN:
-                    printTechnicianMenu();
-                    break;
-
-                case POWER_USER:
-                    printPowerUserMenu();
-                    break;
-
-                case ORDINARY_USER:
-                    printUserMenu();
-                    break;
-
-            }
-
+            System.out.println("1 Start the printer");
+            System.out.println("2 Stop the printer");
+            System.out.println("3 Restart the printer");
+            System.out.println("4 Print a file");
+            System.out.println("5 Queue");
+            System.out.println("6 TopQueue");
+            System.out.println("7 Read Configuration");
+            System.out.println("8 Set Configuration");
+            System.out.println("9 Check status");
+            System.out.println("10 Exit");
             System.out.println("Select option: ");
             String input = scanner.nextLine();
 
             try {
                 switch(input) {
                     case "1":
-                        if(authorizeUser(Permission.Permissions.START)) {
-                            printServer.start();
-                            System.out.println("Printer has been started");
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+                        username = authenticateUser();
+
+                        token=printServer.start(username);
+                        System.out.println("Printer has been started");
                         break;
 
                     case "2":
-                        if(authorizeUser(Permission.Permissions.STOP)){
-                            printServer.stop();
-                            System.out.println("Printer is stopped");
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+
+                        printServer.stop(token);
+                        System.out.println("Printer is stopped");
                         break;
 
                     case "3":
-                        if(authorizeUser(Permission.Permissions.RESTART)) {
-                            printServer.restart();
-                            System.out.println("Printer is restarted");
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+
+                        printServer.restart(token);
+                        System.out.println("Printer is restarted");
                         break;
 
                     case "4":
-                        if(authorizeUser(Permission.Permissions.PRINT)) {
-                            System.out.println("Enter File Name");
-                            System.out.println("(e.g.  'abc.txt' or 'xyz.doc')");
-                            String file = scanner.nextLine();
-                            System.out.println("Enter Printer Number");
-                            System.out.println("(e.g. choose any between '10' or '20')");
-                            String printer = scanner.nextLine();
-                            printServer.print(file, printer);
-                            System.out.println("...Successfully Placed in Queue");
-                            System.out.println("(check QUEUE to see status)");
-                        }  else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+
+                        System.out.println("Enter File Name");
+                        System.out.println("(e.g.  'mounika.txt' or 'chandni.doc')");
+                        String file = scanner.nextLine();
+                        System.out.println("Enter Printer Number");
+                        System.out.println("e.g. choose any between '1' or '10'");
+                        String printer = scanner.nextLine();
+                        printServer.print(file, printer,token);
+                        System.out.println("Successfully Queued...");
+                        System.out.println("view Queue status");
                         break;
 
                     case "5":
-                        if(authorizeUser(Permission.Permissions.QUEUE)) {
-                            if (printServer.isStarted()) {
-                                System.out.println("Enter Printer Number");
-                                System.out.println("(e.g. choose the number previously used in OPTION :: 4)");
-                                String printer1 = scanner.nextLine();
-                                System.out.println("JobNo\t\tFileName\t\tPrinter");
-                                System.out.println(printServer.queue(printer1));
-                            }
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
+
+                        if(printServer.isStarted()) {
+                            System.out.println("Enter Printer Number");
+                            System.out.println("e.g. choose the same printer number selected previously");
+                            String printer1 = scanner.nextLine();
+                            System.out.println("JobNumber\t\tFileName\t\tPrinter");
+                            System.out.println(printServer.queue(printer1,token));
                         }
                         break;
 
                     case "6":
-                        if(authorizeUser(Permission.Permissions.TOP_QUEUE)) {
-                            if (printServer.isStarted()) {
-                                System.out.println("Enter Printer Number");
-                                System.out.println("(e.g. choose any between '10' or '20')");
-                                String printerName = scanner.nextLine();
-                                System.out.println("Enter job number");
-                                String jobString = scanner.nextLine();
-                                printServer.topQueue(printerName, Integer.valueOf(jobString));
-                                System.out.println("Job scheduled");
-                            }
-                        }  else {
-                            System.out.println("User is not authorized to perform this action");
+                        if(printServer.isStarted()) {
+                            System.out.println("Enter Printer Number");
+                            System.out.println("e.g. choose any between '1' or '10'");
+                            String printerName = scanner.nextLine();
+                            System.out.println("Enter job number");
+                            String jobString = scanner.nextLine();
+                            printServer.topQueue(printerName, Integer.valueOf(jobString),token);
+                            System.out.println("Job scheduled");
                         }
                         break;
 
                     case "7":
-                        if(authorizeUser(Permission.Permissions.READ_CONFIG)) {
-                            System.out.println("Enter parameter");
-                            System.out.println("(e.g. choose 'port', 'host' or 'name')");
-                            String parameter = scanner.nextLine();
-                            System.out.println(printServer.readConfig(parameter));
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+
+                        System.out.println("Enter parameter");
+                        System.out.println("e.g. choose 'port', 'host' or 'name'");
+                        String parameter = scanner.nextLine();
+                        System.out.println(printServer.readConfig(parameter));
                         break;
 
                     case "8":
-                        if(authorizeUser(Permission.Permissions.WRITE_CONFIG)) {
-                            System.out.println("Enter parameter");
-                            System.out.println("(e.g. choose 'port', 'host' or 'name')");
-                            String param = scanner.nextLine();
-                            System.out.println("Enter parameter value");
-                            String value = scanner.nextLine();
-                            printServer.setConfig(param, value);
-                        }
+
+                        System.out.println("Enter parameter");
+                        System.out.println("e.g. choose 'port', 'host' or 'name'");
+                        String param = scanner.nextLine();
+                        System.out.println("Enter parameter value");
+                        String value = scanner.nextLine();
+                        printServer.setConfig(param, value);
                         break;
 
                     case "9":
-                        if(authorizeUser(Permission.Permissions.STATUS)) {
-                            //                        if(printServer.isStarted()) {
+
+//                        if(printServer.isStarted()) {
                             System.out.println("Enter Printer Number");
-                            System.out.println("(e.g. choose any between '10' or '20')");
+                            System.out.println("e.g. choose any between '1' or '10'");
                             String printerName = scanner.nextLine();
 
-                            if (printServer.status(printerName)) {
-                                System.out.println("Printer Status: " + "ONLINE");
+                            if (printServer.status(printerName,token)) {
+                                System.out.println("Printer Status: " + "ONLINE"+"\n");
                             } else {
-                                System.out.println("Printer Status: " + "OFFLINE");
+                                System.out.println("Printer Status: " + "OFFLINE"+"\n");
                             }
-                            //                        }
-                        } else {
-                            System.out.println("User is not authorized to perform this action");
-                        }
+//                        }
                         break;
 
                     case "10":
