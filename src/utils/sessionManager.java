@@ -1,3 +1,8 @@
+/***
+ * Manage session, include session generation, killing, validation checking
+ * @author Yingli Duan
+ * @version 1.1
+ */
 package utils;
 
 import Models.session;

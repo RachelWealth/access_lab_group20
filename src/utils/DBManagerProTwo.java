@@ -1,3 +1,8 @@
+/***
+ * This class implement RBAC
+ * @author Yingli Duan
+ * @version 1.1
+ */
 package utils;
 
 import printServer.PasswordEncrypter;
@@ -5,6 +10,7 @@ import printServer.PasswordEncrypter;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Objects;
+
 
 public class DBManagerProTwo {
     private static final Connection con = connect();
@@ -83,6 +89,12 @@ public class DBManagerProTwo {
         st.executeUpdate(sql);
     }
 
+    /**
+     * search the access of a user
+     * @param userName
+     * @return boolean
+     * @throws SQLException
+     */
     public ResultSet searchPermission(String userName) throws SQLException {
         String sql = "select roleDB.roleAccess from userDB,roleDB,dutyDB where userDB.username = '"+userName + "' and dutyDB.userName = userDB.userName and dutyDB.role = roleDB.roleName";
         return st.executeQuery(sql);
