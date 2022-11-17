@@ -17,7 +17,7 @@ public class buildDatabase {
 //        dbhelper.insertRole("technician","7,8,9");
 //        dbhelper.insertRole("pUser","1,2,3,6");
 //        dbhelper.insertRole("user","1,2");
-
+//
 //        dbhelper.insertUser("Alice","000","administrator");
 //        dbhelper.insertUser("Bob","001","service,technician");
 //        dbhelper.insertUser("Cecilia","010","pUser");
