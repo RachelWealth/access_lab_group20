@@ -3,8 +3,8 @@
 username, password, role
 
         dbhelper.insertRole("administrator","1,2,3,4,5,6,7,8,9");
-        dbhelper.insertRole("service","4,5,6");
-        dbhelper.insertRole("technician","7,8,9");
+        dbhelper.insertRole("service","1,2,4,5,6");
+        dbhelper.insertRole("technician","1,2,7,8,9");
         dbhelper.insertRole("pUser","1,2,3,6");
         dbhelper.insertRole("user","1,2");
 
