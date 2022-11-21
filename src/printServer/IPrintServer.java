@@ -15,10 +15,11 @@ public interface IPrintServer extends Remote {
     void stop(UUID token) throws RemoteException; // 5 stops the print server
     void restart(UUID token) throws RemoteException; // 6 stops the print server, clears the print queue and starts the print server again
     boolean status(String printer, UUID token)  throws RemoteException; // 7 prints status of printer on the user's display
-    String readConfig(String parameter) throws RemoteException; // 8 prints the value of the parameter on the user's display
-    void setConfig(String parameter, String value) throws RemoteException; // 9 sets the parameter to value
+    String readConfig(String parameter, UUID... token) throws RemoteException; // 8 prints the value of the parameter on the user's display
+    void setConfig(String parameter, String value, UUID... token) throws RemoteException; // 9 sets the parameter to value
     boolean isAuthorized(String username, String password) throws RemoteException, SQLException, NoSuchAlgorithmException; // validates user credentials
     boolean isStarted() throws RemoteException; //checks if the printer is started
+
 }
 
 

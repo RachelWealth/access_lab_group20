@@ -85,9 +85,9 @@ public class PrintClient {
                 switch(input) {
                     case "1":
                         username = authenticateUser();
-
                         token=printServer.start(username);
-                        System.out.println("Printer has been started");
+                        if(printServer.isStarted())System.out.println("Printer has been started");
+                        else System.out.println("No permission");
                         break;
 
                     case "2":
@@ -143,7 +143,7 @@ public class PrintClient {
                         System.out.println("Enter parameter");
                         System.out.println("e.g. choose 'port', 'host' or 'name'");
                         String parameter = scanner.nextLine();
-                        System.out.println(printServer.readConfig(parameter));
+                        System.out.println(printServer.readConfig(parameter,token));
                         break;
 
                     case "8":
@@ -153,7 +153,7 @@ public class PrintClient {
                         String param = scanner.nextLine();
                         System.out.println("Enter parameter value");
                         String value = scanner.nextLine();
-                        printServer.setConfig(param, value);
+                        printServer.setConfig(param, value,token);
                         break;
 
                     case "9":

@@ -17,6 +17,7 @@ public class DBManagerProTwo {
     private static Statement st;
 
 
+
     private static Connection connect(){
         Connection con=null;
         try{
@@ -99,4 +100,11 @@ public class DBManagerProTwo {
         String sql = "select roleDB.roleAccess from userDB,roleDB,dutyDB where userDB.username = '"+userName + "' and dutyDB.userName = userDB.userName and dutyDB.role = roleDB.roleName";
         return st.executeQuery(sql);
     }
+    public synchronized ResultSet search(String name) throws SQLException, NoSuchAlgorithmException {
+        String sql="select * from " + "userDB"+ " where userName= '"+name+"'";
+
+        Statement st=con.createStatement();
+        return st.executeQuery(sql);
+    }
+
 }

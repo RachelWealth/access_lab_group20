@@ -25,11 +25,11 @@ public class RunServer {
         FileReader fReader = new FileReader("project.config");
         BufferedReader bReader = new BufferedReader(fReader);
         String port = null, name = null;
-        port = server.readConfig("port");
-        name = server.readConfig("name");
+        //port = server.readConfig("port");
+        //name = server.readConfig("name");
 
-        Registry registry = java.rmi.registry.LocateRegistry.createRegistry(Integer.parseInt(port));
-        registry.rebind(name, server);
+        Registry registry = java.rmi.registry.LocateRegistry.createRegistry(2001);
+        registry.rebind("server", server);
 
     }
 
