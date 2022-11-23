@@ -6,6 +6,8 @@ import utils.DBManagerProTwo;
 import utils.sessionManager;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
@@ -13,19 +15,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
-
-    boolean isServerStarted = false;
-    boolean isPermission = false;
-
-    //boolean isServerStarted = true;
-    public int queueNo = 1;
-    User u = new User();
-    private LinkedList<PrinterQueue> printQueue = new LinkedList<PrinterQueue>();
-
-    private final DBManagerProTwo udb = new DBManagerProTwo();
+public class PrintServer extends UnicastRemoteObject implements IPrintServer {
 
     private static sessionManager seMan = new sessionManager();
+    private final DBManagerProTwo udb = new DBManagerProTwo();
+    //boolean isServerStarted = true;
+    public int queueNo = 1;
+    boolean isServerStarted = false;
+    boolean isPermission = false;
+    User u = new User();
+    private LinkedList<PrinterQueue> printQueue = new LinkedList<PrinterQueue>();
 
     public PrintServer() throws RemoteException {
         super();
@@ -40,9 +39,9 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
                     return;
                 }
                 isPermission = isPermit(Const.getPrint());
-                if(!isPermission){
+                if (!isPermission) {
                     System.out.println("No permission");
-                    return ;
+                    return;
                 }
                 PrinterQueue job = new PrinterQueue(filename, printer, queueNo);
                 printQueue.add(job);
@@ -64,11 +63,11 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
                     return null;
                 }
                 isPermission = isPermit(Const.getQueue());
-                if(!isPermission){
+                if (!isPermission) {
                     System.out.println("No permission");
                     return "\0";
                 }
-                for(PrinterQueue pq: printQueue) {
+                for (PrinterQueue pq : printQueue) {
                     queue += pq + "\n";
                 }
             }
@@ -89,13 +88,13 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
                     return;
                 }
                 isPermission = isPermit(Const.getTopQueue());
-                if(!isPermission){
+                if (!isPermission) {
                     System.out.println("No permission");
-                    return ;
+                    return;
                 }
                 PrinterQueue printingJobMoved = null;
-                for(PrinterQueue pq : printQueue) {
-                    if(pq.queueNo == job) {
+                for (PrinterQueue pq : printQueue) {
+                    if (pq.queueNo == job) {
                         printingJobMoved = pq;
                         printQueue.remove(pq);
                         break;
@@ -123,33 +122,33 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
     @Override
-    public void stop( UUID token) {
+    public void stop(UUID token) {
         if (!sessionManager.isSessionValid(token)) {
             System.out.println("session expired");
             return;
         }
         isPermission = isPermit(Const.getStop());
-        if(!isPermission){
+        if (!isPermission) {
             System.out.println("No permission");
-            return ;
+            return;
         }
         isServerStarted = false;
-        u.userName=null;
+        u.userName = null;
         u.userPermision = null;
         System.out.println("stop() invoked");
 
     }
 
     @Override
-    public void restart( UUID token) {
+    public void restart(UUID token) {
         if (!sessionManager.isSessionValid(token)) {
             System.out.println("session expired");
             return;
         }
         isPermission = isPermit(Const.getRestart());
-        if(!isPermission){
+        if (!isPermission) {
             System.out.println("No permission");
-            return ;
+            return;
         }
 
         isServerStarted = false;
@@ -168,7 +167,7 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
                 return false;
             }
             isPermission = isPermit(Const.getStatus());
-            if(!isPermission){
+            if (!isPermission) {
                 System.out.println("No permission");
                 return false;
             }
@@ -182,16 +181,11 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
 
     @Override
     public String readConfig(String parameter, UUID... token) {
+        if ((token.length != 0) && (!sessionManager.isSessionValid(token[0]))) {
+            System.out.println("session expired");
+            return "\0";
+        }
         try {
-            if ((token.length!=0)&&(!sessionManager.isSessionValid(token[0]))) {
-                System.out.println("session expired");
-                return "\0";
-            }
-            isPermission = isPermit(Const.getReadConfig());
-            if(!isPermission){
-                System.out.println("No permission");
-                return "\0";
-            }
             FileReader fReader = new FileReader("project.config");
             BufferedReader bReader = new BufferedReader(fReader);
             String line;
@@ -206,7 +200,7 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
             bReader.close();
             System.out.println("readConfig() invoked");
             return configVal;
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -214,38 +208,46 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
 
     @Override
     public void setConfig(String parameter, String value, UUID... token) {
-//        try {
-//            PrintWriter pWriter = new PrintWriter(new BufferedWriter(new FileWriter("project.config", true)));
-//            pWriter.println(parameter+"="+value);
-//            pWriter.close();
 
-        if ((token.length!=0)&&(!sessionManager.isSessionValid(token[0]))) {
+        if ((token.length != 0) && (!sessionManager.isSessionValid(token[0]))) {
             System.out.println("session expired");
-            return ;
+            return;
         }
-        isPermission = isPermit(Const.getSetConfig());
-        if(!isPermission){
-            System.out.println("No permission");
-            return ;
-        }
+        try {
+            List<String> lines;
+            File file = new File("project.config");
+            lines = Files.readAllLines(file.toPath(), Charset.defaultCharset());
+            List<String> newLines = new ArrayList<String>();
+            for (String line : lines) {
+                if (line.contains(parameter)) {
+                    String[] vals = line.split("=");
+                    newLines.add(vals[0] + "=" + String.valueOf(value));
+                } else {
+                    newLines.add(line);
+                }
+            }
+            Files.write(file.toPath(), newLines, Charset.defaultCharset());
             System.out.println("setConfig() invoked");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public boolean isAuthorized(String username, String password) throws SQLException, NoSuchAlgorithmException {
         ResultSet rs = udb.search(username);
-        while (rs.next()){
+        while (rs.next()) {
 //            System.out.println(rs.getString("pw"));
 //            System.out.println(rs.getString("salt"));
 //            System.out.println(PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")));
-            if(Objects.equals(rs.getString("password"), PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")))){
+            if (Objects.equals(rs.getString("password"), PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")))) {
                 DBManagerProTwo dbtwo = new DBManagerProTwo();
                 ResultSet rt = dbtwo.searchPermission(username);
                 Set<String> set = new HashSet<>();
-                while(rt.next()){
+                while (rt.next()) {
                     String[] pers = rt.getString("roleAccess").split(",");
                     set.addAll(Arrays.asList(pers));
 
@@ -259,14 +261,18 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
     }
 
 
-
     @Override
     public boolean isStarted() {
-        if(!isServerStarted) {
+        if (!isServerStarted) {
             System.out.println("\t" + "Printer not started!");
-            System.out.println("Please START the printer to see method invocation status"+"\n");
+            System.out.println("Please START the printer to see method invocation status" + "\n");
         }
         return isServerStarted;
+    }
+
+    private boolean isPermit(String operation) {
+        int permit = Arrays.binarySearch(u.userPermision, operation);
+        return permit >= 0;
     }
 
     public class PrinterQueue {
@@ -284,9 +290,5 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
         public String toString() {
             return (this.queueNo + "\t\t\t" + this.fileName + "\t\t\t" + this.printer + "\n");
         }
-    }
-    private boolean isPermit(String operation){
-        int permit = Arrays.binarySearch(u.userPermision,operation);
-        return permit>=0;
     }
 }
