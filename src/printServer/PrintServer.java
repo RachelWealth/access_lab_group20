@@ -240,9 +240,6 @@ public class PrintServer extends UnicastRemoteObject implements IPrintServer {
     public boolean isAuthorized(String username, String password) throws SQLException, NoSuchAlgorithmException {
         ResultSet rs = udb.search(username);
         while (rs.next()) {
-//            System.out.println(rs.getString("pw"));
-//            System.out.println(rs.getString("salt"));
-//            System.out.println(PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")));
             if (Objects.equals(rs.getString("password"), PasswordEncrypter.getEncryptedPassword(password, rs.getString("salt")))) {
                 DBManagerProTwo dbtwo = new DBManagerProTwo();
                 ResultSet rt = dbtwo.searchPermission(username);
@@ -253,6 +250,7 @@ public class PrintServer extends UnicastRemoteObject implements IPrintServer {
 
                 }
                 String[] permission = (String[]) set.toArray(new String[set.size()]);
+                u.userName = username;
                 u.userPermision = permission;
                 return true;
             }
@@ -260,6 +258,10 @@ public class PrintServer extends UnicastRemoteObject implements IPrintServer {
         return false;
     }
 
+//    public boolean changeUser(String username){
+//        u.userName = username;
+//
+//    }
 
     @Override
     public boolean isStarted() {
@@ -272,7 +274,12 @@ public class PrintServer extends UnicastRemoteObject implements IPrintServer {
 
     private boolean isPermit(String operation) {
         int permit = Arrays.binarySearch(u.userPermision, operation);
-        return permit >= 0;
+        this.isPermission = (permit >= 0);
+        return this.isPermission;
+    }
+    @Override
+    public boolean getIsPermission(){
+        return !isPermission;
     }
 
     public class PrinterQueue {

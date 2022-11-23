@@ -19,6 +19,8 @@ public interface IPrintServer extends Remote {
     void setConfig(String parameter, String value, UUID... token) throws RemoteException; // 9 sets the parameter to value
     boolean isAuthorized(String username, String password) throws RemoteException, SQLException, NoSuchAlgorithmException; // validates user credentials
     boolean isStarted() throws RemoteException; //checks if the printer is started
+    //boolean changeUser(String username);
+    boolean getIsPermission()throws RemoteException;
 
 }
 
