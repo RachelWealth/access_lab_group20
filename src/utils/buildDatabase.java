@@ -8,8 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class buildDatabase {
-    userDatabase ud = new userDatabase();
-
     public static void main(String[] args) throws NoSuchAlgorithmException, SQLException, IOException {
         DBManagerProTwo dbhelper = new DBManagerProTwo();
         dbhelper.insertRole("administrator","1,2,3,4,5,6,7,8,9");
