@@ -1,7 +1,6 @@
 package printServer;
 
 import Models.Const;
-import Models.Role;
 import Models.User;
 import utils.DBManagerProTwo;
 import utils.userDatabase;
@@ -136,6 +135,8 @@ public class PrintServer  extends UnicastRemoteObject implements IPrintServer {
             return ;
         }
         isServerStarted = false;
+        u.userName=null;
+        u.userPermision = null;
         System.out.println("stop() invoked");
 
     }

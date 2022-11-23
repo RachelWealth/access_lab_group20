@@ -93,6 +93,7 @@ public class PrintClient {
                     case "2":
 
                         printServer.stop(token);
+
                         System.out.println("Printer is stopped");
                         break;
 
@@ -103,26 +104,34 @@ public class PrintClient {
                         break;
 
                     case "4":
+                        if(printServer.isStarted()){
+                            System.out.println("Enter File Name");
+                            System.out.println("(e.g.  'mounika.txt' or 'chandni.doc')");
+                            String file = scanner.nextLine();
+                            System.out.println("Enter Printer Number");
+                            System.out.println("e.g. choose any between '1' or '10'");
+                            String printer = scanner.nextLine();
 
-                        System.out.println("Enter File Name");
-                        System.out.println("(e.g.  'mounika.txt' or 'chandni.doc')");
-                        String file = scanner.nextLine();
-                        System.out.println("Enter Printer Number");
-                        System.out.println("e.g. choose any between '1' or '10'");
-                        String printer = scanner.nextLine();
-                        printServer.print(file, printer,token);
-                        System.out.println("Successfully Queued...");
-                        System.out.println("view Queue status");
+                            printServer.print(file, printer,token);
+                            System.out.println("Successfully Queued...");
+                            System.out.println("view Queue status");
+
+                        }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
+                        }
                         break;
 
                     case "5":
-
                         if(printServer.isStarted()) {
                             System.out.println("Enter Printer Number");
                             System.out.println("e.g. choose the same printer number selected previously");
                             String printer1 = scanner.nextLine();
                             System.out.println("JobNumber\t\tFileName\t\tPrinter");
                             System.out.println(printServer.queue(printer1,token));
+                        }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
                         }
                         break;
 
@@ -135,30 +144,41 @@ public class PrintClient {
                             String jobString = scanner.nextLine();
                             printServer.topQueue(printerName, Integer.valueOf(jobString),token);
                             System.out.println("Job scheduled");
+                        }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
                         }
                         break;
 
                     case "7":
-
-                        System.out.println("Enter parameter");
-                        System.out.println("e.g. choose 'port', 'host' or 'name'");
-                        String parameter = scanner.nextLine();
-                        System.out.println(printServer.readConfig(parameter,token));
+                        if(printServer.isStarted()) {
+                            System.out.println("Enter parameter");
+                            System.out.println("e.g. choose 'port', 'host' or 'name'");
+                            String parameter = scanner.nextLine();
+                            System.out.println(printServer.readConfig(parameter, token));
+                        }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
+                        }
                         break;
 
                     case "8":
-
-                        System.out.println("Enter parameter");
-                        System.out.println("e.g. choose 'port', 'host' or 'name'");
-                        String param = scanner.nextLine();
-                        System.out.println("Enter parameter value");
-                        String value = scanner.nextLine();
-                        printServer.setConfig(param, value,token);
+                        if(printServer.isStarted()) {
+                            System.out.println("Enter parameter");
+                            System.out.println("e.g. choose 'port', 'host' or 'name'");
+                            String param = scanner.nextLine();
+                            System.out.println("Enter parameter value");
+                            String value = scanner.nextLine();
+                            printServer.setConfig(param, value, token);
+                        }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
+                        }
                         break;
 
                     case "9":
 
-//                        if(printServer.isStarted()) {
+                        if(printServer.isStarted()) {
                             System.out.println("Enter Printer Number");
                             System.out.println("e.g. choose any between '1' or '10'");
                             String printerName = scanner.nextLine();
@@ -168,7 +188,10 @@ public class PrintClient {
                             } else {
                                 System.out.println("Printer Status: " + "OFFLINE"+"\n");
                             }
-//                        }
+                       }else{
+                            System.out.println("\t" + "Printer not started!");
+                            System.out.println("Please START the printer to see method invocation status"+"\n");
+                        }
                         break;
 
                     case "10":
