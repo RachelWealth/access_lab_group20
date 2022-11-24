@@ -73,10 +73,7 @@ public class DBManagerProTwo {
         String sql = "update dutyDB where userName = '" + name + "'set role = '" + roles + "'";
         st.executeUpdate(sql);
     }
-//    public void workerDelete(String userName) throws SQLException {
-//        String sql = "Update userDB set status = " + 0 + "where userName = '" + userName + "'";
-//        st.executeUpdate(sql);
-//    }
+
 
     public void insertRole(String roleName,String roleAccess) throws SQLException {
         String  sql="insert into roleDB values('" + roleName +"'"+ ",'"+roleAccess+"');";
@@ -95,6 +92,11 @@ public class DBManagerProTwo {
         st.executeUpdate(sql);
     }
 
+    /**
+     * delete a user
+     * @param name
+     * @throws SQLException
+     */
         public void deleteUser(String name) throws SQLException {
         String sql = "select * from dutyDB where userName = '"+name+"' ";
         ResultSet rs = st.executeQuery(sql);

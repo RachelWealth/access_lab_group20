@@ -16,6 +16,19 @@ username, password, role
         dbhelper.insertUser("Fres","101","user");
         dbhelper.insertUser("George","110",null);
 
+Permission number:
+```
+void print(String filename, String printer, UUID token) throws RemoteException; // 1 
+String queue(String printer, UUID token) throws RemoteException; // 2 
+void topQueue(String printer, int job, UUID token) throws RemoteException; // 3 
+UUID start(String user) throws RemoteException; // 4
+void stop(UUID token) throws RemoteException; // 5 
+void restart(UUID token) throws RemoteException; // 6 
+boolean status(String printer, UUID token)  throws RemoteException; // 7 
+String readConfig(String parameter, UUID... token) throws RemoteException; // 8 
+void setConfig(String parameter, String value, UUID... token) throws RemoteException; //9
+```
+
 ## developer
 check the access of a user by using RBAC:
 ```
@@ -27,3 +40,4 @@ check the access of a user by using ACL:
 DBManagerProOne dbonehelper = new DBManagerProOne();
 System.out.println(dbonehelper.searchPermission("George","setConfig"));
 ```
+

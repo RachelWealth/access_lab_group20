@@ -65,12 +65,16 @@ public String inputName(){
         int flag = 1;
         while(flag==1){
             rd.deploy();
-            System.out.println("Please input what you want to do:");
+            System.out.println("Please input what you want to do(input 1,2):");
             System.out.println("1. continue");
             System.out.println("2. exit");
-            flag = Integer.parseInt(scanner.nextLine());
-
-
+            String flag0 = scanner.nextLine();
+            if((flag0!="1") || (flag0 !="2")) {
+                System.out.println("Please input 1 or 2");
+            }
+            else{
+                flag = Integer.parseInt(flag0);
+            }
         }
     }
 
