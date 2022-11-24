@@ -56,7 +56,12 @@ public class DBManagerProTwo {
      * @param newName can be 'null'
      */
     public void workerReplace( String oldName, String newName) throws SQLException {
-        this.workerDelete(oldName);
+
+        String sql = "Update userDB set userName = '" + newName + "' where userName = '" + oldName + "'";
+        st.executeUpdate(sql);
+
+        sql = "Update dutyDB set userName = '" +newName + "' where userName = '" + oldName + "'";
+        st.executeUpdate(sql);
     }
 
     /**
@@ -68,10 +73,10 @@ public class DBManagerProTwo {
         String sql = "update dutyDB where userName = '" + name + "'set role = '" + roles + "'";
         st.executeUpdate(sql);
     }
-    public void workerDelete(String userName) throws SQLException {
-        String sql = "Update userDB set status = " + 0 + "where userName = '" + userName + "'";
-        st.executeUpdate(sql);
-    }
+//    public void workerDelete(String userName) throws SQLException {
+//        String sql = "Update userDB set status = " + 0 + "where userName = '" + userName + "'";
+//        st.executeUpdate(sql);
+//    }
 
     public void insertRole(String roleName,String roleAccess) throws SQLException {
         String  sql="insert into roleDB values('" + roleName +"'"+ ",'"+roleAccess+"');";
@@ -89,6 +94,25 @@ public class DBManagerProTwo {
         }
         st.executeUpdate(sql);
     }
+
+        public void deleteUser(String name) throws SQLException {
+        String sql = "select * from dutyDB where userName = '"+name+"' ";
+        ResultSet rs = st.executeQuery(sql);
+        if(rs.next()){
+            if(rs.getString("role")=="administrator"){
+
+                    System.out.println("You can not delete administrator");
+                    System.out.println("As I do not have time to implement this function");
+                }else{
+                    sql = "delete from userDB where username = '" + name+"'";
+                    st.executeUpdate(sql);
+                sql = "delete from dutyDB where username = '" + name+"'";
+                st.executeUpdate(sql);
+                }
+            }else{
+            System.out.println("No user");
+        }
+        }
 
     /**
      * search the access of a user
