@@ -1,5 +1,5 @@
 # access_lab_group20
-## user
+
 step of running programme:
 1. Perform functions of print server:
 > RunServer -> PrintClient
@@ -37,19 +37,8 @@ String readConfig(String parameter, UUID... token) throws RemoteException; // 8
 void setConfig(String parameter, String value, UUID... token) throws RemoteException; //
 ```
 
-## developer
-check the access of a user by using RBAC:
-```
-DBManagerProTwo dbhelper = new DBManagerProTwo();
-ResultSet rs = dbhelper.searchPermission("Alice");
-```
-check the access of a user by using ACL:
-```
-DBManagerProOne dbonehelper = new DBManagerProOne();
-System.out.println(dbonehelper.searchPermission("George","setConfig"));
-```
-
 ### access policy file:
 ACL : \access_lab_group20\permission
+
 RBAC: \access_lab_group20\src\db\access.db
 
