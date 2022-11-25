@@ -42,10 +42,10 @@ public class DBManagerProTwo {
         if (Objects.equals(operation, "add")){
             this.insertRole(roleName,access);
         }else if (Objects.equals(operation, "del")){
-            String sql="delete from roleDB where roleName = '"+roleName+"'";
+            String sql="delete from roleDB where roleName= '"+roleName+"'";
             st.executeUpdate(sql);
         }else{
-            String sql="update roleDB set access = '"+access+"' where roleName = '"+roleName+"'";
+            String sql="update roleDB set roleAccess = '"+access+"' where roleName = '"+roleName+"'";
             st.executeUpdate(sql);
         }
     }

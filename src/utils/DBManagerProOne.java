@@ -262,6 +262,52 @@ public class DBManagerProOne {
         return true;
     }
 
+    public boolean updateWorkerRole(String name, String permission){
+        boolean flag = false;
+        BufferedReader br = null;
+
+        String line = null;
+
+        StringBuffer bufAll = new StringBuffer();
+        try{
+
+            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(filePath)), "UTF-8"));
+            while((line = br.readLine()) != null){
+                StringBuffer buf = new StringBuffer();
+                String[] a = line.split(":");
+                if(Objects.equals(line.split(":")[0], name)){
+
+                    line = line.split(":")[0]+":"+permission;
+                    flag = true;
+                }
+                buf.append(line);
+                buf.append(System.getProperty("line.separator"));
+                bufAll.append(buf);
+
+            }
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception e) {
+                    br = null;
+                }
+            }
+            writeFile(bufAll.toString());
+        } catch (Exception e) {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception ee) {
+                    br = null;
+                }
+            }
+            return flag;
+            // throw new RuntimeException(e);
+        }
+
+        return true;
+    }
+
 }
 
 

@@ -27,7 +27,7 @@ public class redeploy_ACL {
         return scanner.nextLine();
     }
     private boolean checkLegalityOfPermission(String permission){
-        String[] strs = permission.split(":");
+        String[] strs = permission.split(",");
         List<String> permiss = Arrays.asList("1","2","3","4","5","6","7","8","9");
         for(String str : strs){
             if(!permiss.contains(str))
@@ -42,10 +42,11 @@ public class redeploy_ACL {
     }
 
     public void deploy() throws SQLException, NoSuchAlgorithmException {
-        System.out.println("Please choose your operation:(use 1,2,3...)");
+        System.out.println("Please choose your operation:");
         System.out.println("add");
         System.out.println("delete");
         System.out.println("replace");
+        System.out.println("update user permission");
         String ope = scanner.nextLine();
         String name = null;
 
@@ -75,6 +76,18 @@ public class redeploy_ACL {
                 name = this.inputName();
                 if(!dbhelper.workerReplace(oldname,name)){
                     System.out.println("replace failed");
+                }
+                break;
+            case "update user permission":
+                System.out.println("Please input the worker name");
+                name = scanner.nextLine();
+                String permiss = this.inputPermission();
+                if(!this.checkLegalityOfPermission(permiss)){
+                    System.out.println("permission is not correct,please input like 1,2,3,4");
+                    break;
+                }
+                if(!dbhelper.updateWorkerRole(name, permiss)){
+                    System.out.println("update failed");
                 }
                 break;
             default:
