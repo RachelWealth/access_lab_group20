@@ -1,49 +1,56 @@
-package utils;
+package printServer;
+
+import utils.DBManagerProOne;
+import utils.DBManagerProTwo;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Scanner;
 
-public class redeploy {
-    DBManagerProTwo dbhelper = new DBManagerProTwo();
-    private static Scanner scanner = new Scanner(System.in);
-public String inputRole(){
-    System.out.println("Please choose its role:(use 1,2,3...)");
-    System.out.println("administrator");
-    System.out.println("service");
-    System.out.println("technician");
-    System.out.println("pUser");
-    System.out.println("user");
-    String role = scanner.nextLine();
-    return role;
-}
-public String inputName(){
+public class redeploy_ACL {
+    DBManagerProOne dbhelper = new DBManagerProOne();
+    private static final Scanner scanner = new Scanner(System.in);
 
-    System.out.println("Please input the name employee:");
-    String name = scanner.nextLine();
-    return name;
-}
+    public String inputPermission(){
+        System.out.println("Please choose its permission(like 1,2,3...)");
+        System.out.println("print:1");
+        System.out.println("queue:2");
+        System.out.println("topQueue:3");
+        System.out.println("start:4");
+        System.out.println("stop:5");
+        System.out.println("restart:6");
+        System.out.println("status:7");
+        System.out.println("readConfig:8");
+        System.out.println("setConfig:9");
+        return scanner.nextLine();
+    }
+//    private boolean checkPemission(){
+//
+//    }
+
+    public String inputName(){
+        System.out.println("Please input the name employee:");
+        return scanner.nextLine();
+    }
+
     public void deploy() throws SQLException, NoSuchAlgorithmException {
-
-
-
         System.out.println("Please choose your operation:(use 1,2,3...)");
         System.out.println("add");
         System.out.println("delete");
         System.out.println("replace");
         String ope = scanner.nextLine();
-
         String name = null;
+
         switch (ope){
             case "add":
                 name=this.inputName();
-                String role = this.inputRole();
+                String permission = this.inputPermission();
+                //TODO check permission legality
                 System.out.println("password");
                 String pw = scanner.nextLine();
-                dbhelper.insertUser(name,pw,role);
+                dbhelper.insertUser(name,pw,permission);
                 break;
-
             case "delete":
                 name = this.inputName();
                 dbhelper.deleteUser(name);
@@ -61,7 +68,7 @@ public String inputName(){
 
     }
     public static void main(String[] args) throws NoSuchAlgorithmException, SQLException, IOException {
-        redeploy rd = new redeploy();
+        redeploy_ACL rd = new redeploy_ACL();
         int flag = 1;
         while(flag==1){
             rd.deploy();

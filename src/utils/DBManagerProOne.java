@@ -1,6 +1,12 @@
 package utils;
 
+import printServer.PasswordEncrypter;
+
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -21,6 +27,25 @@ public class DBManagerProOne {
         dict.put("readConfig","8");
         dict.put("setConfig","9");
     }
+    private String filePath = "permission";
+
+    private static Statement st;
+    private static final Connection con = connect();
+    private static Connection connect(){
+        Connection con=null;
+        try{
+            Class.forName("org.sqlite.JDBC");
+            String PATH_DB = "src\\db\\access.db";
+            String url = "jdbc:sqlite:" + PATH_DB;
+            con= DriverManager.getConnection(url);
+            st=con.createStatement();
+            System.out.println();
+        }catch(Exception e){
+            System.out.println("failed in connecting with database"+e.getMessage());;
+        }
+        return con;
+    }
+
     public static void initial() throws IOException {
         try{
             FileWriter writer = new FileWriter("permission",false);
@@ -63,6 +88,179 @@ public class DBManagerProOne {
         }
         return false;
     }
+
+    /**
+     * insert a new user
+     * @return
+     */
+    public boolean insertUser(String name,String pw, String permission) throws SQLException, NoSuchAlgorithmException {
+
+        BufferedReader br = null;
+
+        String line = null;
+
+        StringBuilder bufAll = new StringBuilder();
+        try{
+            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(filePath)), "UTF-8"));
+            while((line = br.readLine()) != null){
+                StringBuffer buf = new StringBuffer();
+                if(line.split(":")[0] == name){
+                    System.out.println("user exist");
+                    return false;
+                }else{
+                    buf.append(line);
+                    buf.append(System.getProperty("line.separator"));
+                    bufAll.append(buf);
+                }
+            }
+            StringBuffer buf = new StringBuffer();
+            line = name + ":" + permission + "\n";
+            buf.append(line);
+            bufAll.append(buf);
+
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception e) {
+                    br = null;
+                }
+            }
+            writeFile(bufAll.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception ee) {
+                    br = null;
+                }
+            }
+            return false;
+           // throw new RuntimeException(e);
+        }
+        String sql ="\0";
+        sql="insert into userDB values('" +name +"'"+ ",'"+String.valueOf(PasswordEncrypter.getEncryptedPassword(pw,null))+"','" +PasswordEncrypter.getSalt() + "',"+String.valueOf(1)+");";
+        st.executeUpdate(sql);
+
+        return true;
+    }
+
+
+    public boolean deleteUser(String name) throws SQLException {
+
+
+        BufferedReader br = null;
+
+        String line = null;
+
+        StringBuffer bufAll = new StringBuffer();
+        try{
+            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(filePath)), "UTF-8"));
+            while((line = br.readLine()) != null){
+                StringBuffer buf = new StringBuffer();
+                if(Objects.equals(line.split(":")[0], name)){
+                    continue;
+                }else{
+                    buf.append(line);
+                    buf.append(System.getProperty("line.separator"));
+                    bufAll.append(buf);
+                }
+            }
+
+
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception e) {
+                    br = null;
+                }
+            }
+            writeFile(bufAll.toString());
+        } catch (Exception e) {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception ee) {
+                    br = null;
+                }
+            }
+            return false;
+            // throw new RuntimeException(e);
+        }
+        String sql = "select * from dutyDB where userName = '"+name+"' ";
+        ResultSet rs = st.executeQuery(sql);
+        return true;
+
+
+    }
+    public boolean workerReplace(String oldName, String newName) throws SQLException {
+
+
+        BufferedReader br = null;
+
+        String line = null;
+
+        StringBuffer bufAll = new StringBuffer();
+        try{
+            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(filePath)), "UTF-8"));
+            while((line = br.readLine()) != null){
+                StringBuffer buf = new StringBuffer();
+                String[] a = line.split(":");
+                if(Objects.equals(line.split(":")[0], oldName)){
+
+                    line = newName+":" + line.split(":")[1];
+
+                }
+                    buf.append(line);
+                    buf.append(System.getProperty("line.separator"));
+                    bufAll.append(buf);
+
+            }
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception e) {
+                    br = null;
+                }
+            }
+            writeFile(bufAll.toString());
+        } catch (Exception e) {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (Exception ee) {
+                    br = null;
+                }
+            }
+            return false;
+            // throw new RuntimeException(e);
+        }
+        String sql = "Update userDB set userName = '" + newName + "' where userName = '" + oldName + "'";
+        st.executeUpdate(sql);
+        return true;
+    }
+
+    private boolean writeFile(String content) throws IOException {
+        BufferedWriter bw = null;
+        try{
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));
+            bw.write(content);
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException e) {
+                    bw = null;
+                }
+            }
+        }
+        return true;
+    }
+
 }
 
 

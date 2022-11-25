@@ -1,5 +1,13 @@
 # access_lab_group20
 ## user
+step of running programme:
+1. Perform functions of print server:
+> RunServer -> PrintClient
+
+2. Add, delete or change the user of a position:
+> redeploy_RBAC
+> redeploy_ACL
+
 username, password, role
 
         dbhelper.insertRole("administrator","1,2,3,4,5,6,7,8,9");
@@ -26,7 +34,7 @@ void stop(UUID token) throws RemoteException; // 5
 void restart(UUID token) throws RemoteException; // 6 
 boolean status(String printer, UUID token)  throws RemoteException; // 7 
 String readConfig(String parameter, UUID... token) throws RemoteException; // 8 
-void setConfig(String parameter, String value, UUID... token) throws RemoteException; //9
+void setConfig(String parameter, String value, UUID... token) throws RemoteException; //
 ```
 
 ## developer
@@ -40,4 +48,8 @@ check the access of a user by using ACL:
 DBManagerProOne dbonehelper = new DBManagerProOne();
 System.out.println(dbonehelper.searchPermission("George","setConfig"));
 ```
+
+### access policy file:
+ACL : \access_lab_group20\permission
+RBAC: \access_lab_group20\src\db\access.db
 
