@@ -10,7 +10,7 @@ public class redeploy_RBAC {
     DBManagerProTwo dbhelper = new DBManagerProTwo();
     private static Scanner scanner = new Scanner(System.in);
 public String inputRole(){
-    System.out.println("Please choose its role:(use 1,2,3...)");
+    System.out.println("Please choose its role");
     System.out.println("administrator");
     System.out.println("service");
     System.out.println("technician");
@@ -27,15 +27,15 @@ public String inputName(){
 }
     public void deploy() throws SQLException, NoSuchAlgorithmException {
 
-
-
         System.out.println("Please choose your operation:(use 1,2,3...)");
         System.out.println("add");
         System.out.println("delete");
         System.out.println("replace");
+        System.out.println("update role");
         String ope = scanner.nextLine();
 
         String name = null;
+
         switch (ope){
             case "add":
                 name=this.inputName();
@@ -53,6 +53,19 @@ public String inputName(){
                 String oldname = scanner.nextLine();
                 name = this.inputName();
                 dbhelper.workerReplace(oldname,name);
+                break;
+            case "update role":
+                System.out.println("Please input the worker name");
+                name = scanner.nextLine();
+                System.out.println("Please input the new role(s)(like pUser,user)");
+                System.out.println("administrator");
+                System.out.println("service");
+                System.out.println("technician");
+                System.out.println("pUser");
+                System.out.println("user");
+                String roles = scanner.nextLine();
+                //TODO check roles
+                dbhelper.updateWorkerRole(name, roles);
                 break;
             default:
                 System.out.println("Wrong operation");

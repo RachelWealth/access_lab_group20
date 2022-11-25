@@ -195,13 +195,14 @@ public class DBManagerProOne {
     }
     public boolean workerReplace(String oldName, String newName) throws SQLException {
 
-
+        boolean flag = false;
         BufferedReader br = null;
 
         String line = null;
 
         StringBuffer bufAll = new StringBuffer();
         try{
+
             br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(filePath)), "UTF-8"));
             while((line = br.readLine()) != null){
                 StringBuffer buf = new StringBuffer();
@@ -209,7 +210,7 @@ public class DBManagerProOne {
                 if(Objects.equals(line.split(":")[0], oldName)){
 
                     line = newName+":" + line.split(":")[1];
-
+                    flag = true;
                 }
                     buf.append(line);
                     buf.append(System.getProperty("line.separator"));
@@ -237,7 +238,7 @@ public class DBManagerProOne {
         }
         String sql = "Update userDB set userName = '" + newName + "' where userName = '" + oldName + "'";
         st.executeUpdate(sql);
-        return true;
+        return flag;
     }
 
     private boolean writeFile(String content) throws IOException {

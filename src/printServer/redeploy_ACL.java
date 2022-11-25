@@ -1,11 +1,12 @@
 package printServer;
 
 import utils.DBManagerProOne;
-import utils.DBManagerProTwo;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class redeploy_ACL {
@@ -25,9 +26,15 @@ public class redeploy_ACL {
         System.out.println("setConfig:9");
         return scanner.nextLine();
     }
-//    private boolean checkPemission(){
-//
-//    }
+    private boolean checkLegalityOfPermission(String permission){
+        String[] strs = permission.split(":");
+        List<String> permiss = Arrays.asList("1","2","3","4","5","6","7","8","9");
+        for(String str : strs){
+            if(!permiss.contains(str))
+                return false;
+        }
+        return true;
+    }
 
     public String inputName(){
         System.out.println("Please input the name employee:");
@@ -46,20 +53,29 @@ public class redeploy_ACL {
             case "add":
                 name=this.inputName();
                 String permission = this.inputPermission();
-                //TODO check permission legality
+                if(!this.checkLegalityOfPermission(permission)){
+                    System.out.println("permission is not correct,please input like 1,2,3,4");
+                    break;
+                }
                 System.out.println("password");
                 String pw = scanner.nextLine();
-                dbhelper.insertUser(name,pw,permission);
+                if(!dbhelper.insertUser(name,pw,permission)){
+                    System.out.println("add failed");
+                }
                 break;
             case "delete":
                 name = this.inputName();
-                dbhelper.deleteUser(name);
+                if(!dbhelper.deleteUser(name)){
+                    System.out.println("delete failed");
+                }
                 break;
             case "replace":
                 System.out.println("Please input the old worker name");
                 String oldname = scanner.nextLine();
                 name = this.inputName();
-                dbhelper.workerReplace(oldname,name);
+                if(!dbhelper.workerReplace(oldname,name)){
+                    System.out.println("replace failed");
+                }
                 break;
             default:
                 System.out.println("Wrong operation");

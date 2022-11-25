@@ -70,7 +70,7 @@ public class DBManagerProTwo {
      * @param roles: list type
      */
     public void updateWorkerRole(String name, String roles) throws SQLException {
-        String sql = "update dutyDB where userName = '" + name + "'set role = '" + roles + "'";
+        String sql = "update dutyDB  set role = '" + roles + "' where userName = '" + name + "' ";
         st.executeUpdate(sql);
     }
 
